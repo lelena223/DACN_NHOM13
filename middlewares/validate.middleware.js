@@ -3,19 +3,17 @@ const AppError = require("../utils/AppError");
 const Joi = require("joi");
 
 const validate = (schema) => (req, res, next) => {
-    const validSchema = Joi.validate(req.body, schema);
-    
-    const { value, error } = Joi.compile(validSchema)
-        .prefs({ errors: { label: 'key' }, abortEarly: false })
-        .validate(object);
+    const { error, value } = schema.validate(req.body, {
+        abortEarly: false,
+    });
 
-        if(error){
-            const errorMessage = error.details.map((details) => details.message).join(" - ");
-            return next(new AppError(errorMessage, httpStatus.BAD_REQUEST));
-        }
+    if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(" - ");
+        return next(new AppError(errorMessage, httpStatus.BAD_REQUEST));
+    }
 
-        Object.assign(req, value);
-        return next();
-}
+    req.body = value;
+    return next();
+};
 
-module.exports = validate
+module.exports = validate;
